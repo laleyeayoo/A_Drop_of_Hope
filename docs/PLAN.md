@@ -1,7 +1,7 @@
 # A Drop of Hope — Product & Technical Plan
 
 > Living document. Update it as patient/family interviews change priorities.
-> Status: **draft v0.1** — pre-build planning.
+> Status: **v0.2** — Phase 1 tracker prototype built (on-device demo data only).
 
 ## 1. Vision
 
@@ -107,6 +107,13 @@ The core of the app. Logging must be **fast** — a patient in a crisis should b
 - Consent records are versioned (what the user agreed to, and when).
 - Research datasets are **de-identified / pseudonymized** and generated from the main database — researchers never query production directly.
 - Real research use needs an institutional partner and **IRB** oversight. Plan for this before promising data to anyone.
+- **Target research partner: the Vanderbilt-Meharry Sickle Cell Center of Excellence** (Nashville, TN). Things to have
+  ready before reaching out:
+  - A one-page summary of the app, the demo, and what interviews have shown so far
+  - A **data dictionary** (every field we collect, its meaning and allowed values — `src/domain/types.ts` is the start)
+  - The privacy & consent design (section 4) and where data would be stored
+  - Questions for them: which outcomes matter most to their research, which standard codes/instruments they use
+    (e.g., validated pain or quality-of-life measures we should adopt), and how IRB review would work
 - Using standard codes (RxNorm, ICD-10/SNOMED, LOINC for labs) and a FHIR-friendly shape makes the data usable by researchers and EHRs later.
 
 ## 4. Privacy, security & compliance
@@ -176,18 +183,19 @@ This is health data from a population that already experiences mistrust and disc
      Research dataset (separate store, IRB-governed)
 ```
 
-### Proposed repo layout
+### Repo layout (as built)
+
+The app lives at the repo root. See the README for a full tour.
 
 ```
-/app                 Expo Router screens (tabs: health, connect, profile)
-/src/components      Shared UI
-/src/features        health/, crises/, meds/, comorbidities/, plans/, community/, trials/
-/src/lib             api client, auth, i18n, validation (zod)
-/src/locales/en      Translation strings
-/supabase/migrations SQL schema + RLS policies
-/supabase/functions  Edge functions (trial sync, exports)
-/supabase/seed       Synthetic demo data
-/docs                This plan, data model, privacy notes, interview notes
+/src/app             Expo Router screens (tabs: My Health, Connect, Profile + stack screens)
+/src/components      Shared UI (Button, Card, PainScale, Rating, BarChart, ...)
+/src/domain          Types, catalogs, plan versioning, insight calculations (pure + unit tested)
+/src/data            Persisted store (zustand + AsyncStorage) and synthetic demo seed
+/src/i18n            Translation strings (en.ts) and i18next setup
+/src/theme           Light/dark color tokens, spacing, type scale
+/supabase            (Phase 2+) migrations, RLS policies, edge functions
+/docs                This plan, interview guide, interview notes
 ```
 
 ## 6. Data model (first draft)
@@ -234,12 +242,20 @@ Governance:
 - Supabase project, auth, roles, base schema + RLS + tests
 - i18n scaffolding, design basics, synthetic seed data
 
-**Phase 1 — Tracker prototype (for interviews) (3–5 weeks)**
-- Onboarding & profile
-- Daily check-in, crisis log, medications + effectiveness, comorbidities
-- Treatment plan with versioning + printable/shareable view
-- Simple insights (crisis frequency, pain trend)
+**Phase 1 — Tracker prototype (for interviews)** ✅ first version built
+- [x] Onboarding (privacy promises, demo data or own profile; patient or caregiver)
+- [x] Daily check-in (pain 0–10, body areas, tiredness, mood, sleep, water, triggers)
+- [x] Quick crisis log + crisis details (care setting, ER wait, plan followed, warning signs, treatments & how much they helped)
+- [x] Medications with dose logging, effectiveness ratings, adherence, stop reasons
+- [x] Comorbidities/complications with episodes
+- [x] Versioned treatment plan with change reasons, history, outcomes per version, printable ER card
+- [x] Insights (crises per month, daily pain, triggers, plan-version comparison)
+- [x] Connect tab placeholder (feature preview + ClinicalTrials.gov link)
+- [x] Export / delete all data; light + dark mode; works on web, iOS, Android
+- Next up: a real date/time picker, reminders, PDF summary for doctor visits, caregiver multi-patient support
 - 🎯 Goal: a working demo to put in front of patients and families during interviews
+
+Phase 0 status: CI (typecheck, lint, tests) is set up. Still to do before any real data: backend, accounts/login, and row-level security (Supabase).
 
 **Phase 2 — Community (3–4 weeks)**
 - Feed, posts, comments, groups, reporting & moderation tools
